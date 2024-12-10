@@ -5,6 +5,7 @@ import com.pms.model.Stock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
@@ -200,12 +202,23 @@ public class ClientController {
     }
 
     @PostMapping("/stocks/update")
-    public String updateStock(@RequestParam Long id, @RequestParam Integer quantity, @RequestParam Integer threshold, RedirectAttributes redirectAttributes) {
+    public String updateStock(@RequestParam Long id, 
+                              @RequestParam Integer quantity, 
+                              @RequestParam Integer threshold,
+                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiryDate,
+                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate manufacturingDate,
+                              RedirectAttributes redirectAttributes) {
         try {
             String url = backendBaseUrl + "/api/stocks/update/" + id;
             Stock stockUpdate = new Stock();
+            stockUpdate.setId(id);
             stockUpdate.setQuantity(quantity);
             stockUpdate.setThreshold(threshold);
+            stockUpdate.setExpiryDate(expiryDate);
+            stockUpdate.setManufacturingDate(manufacturingDate);
+
+            logger.info("Updating stock with ID: {}, New Quantity: {}, New Threshold: {}, New Expiry Date: {}, New Manufacturing Date: {}", 
+                        id, quantity, threshold, expiryDate, manufacturingDate);
 
             HttpEntity<Stock> request = new HttpEntity<>(stockUpdate);
             ResponseEntity<Stock> response = restTemplate.exchange(
@@ -215,14 +228,18 @@ public class ClientController {
                 Stock.class
             );
 
+            logger.info("Update stock response status: {}", response.getStatusCode());
+
             if (response.getStatusCode().is2xxSuccessful()) {
+                logger.info("Stock updated successfully: {}", response.getBody());
                 redirectAttributes.addFlashAttribute("success", "Stock updated successfully");
             } else {
+                logger.error("Error updating stock: {}", response.getStatusCode());
                 redirectAttributes.addFlashAttribute("error", "Error updating stock: " + response.getStatusCode());
             }
             return "redirect:/stocks";
         } catch (Exception e) {
-            logger.error("Error updating stock", e);
+            logger.error("Exception occurred while updating stock", e);
             redirectAttributes.addFlashAttribute("error", "Error updating stock: " + e.getMessage());
             return "redirect:/stocks";
         }

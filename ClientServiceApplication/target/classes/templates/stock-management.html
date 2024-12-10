@@ -1,72 +1,86 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title>Stock Management</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">Pharmacy Management System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/drugs">Drugs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/stocks">Stocks</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
+	<!-- Navbar -->
+			   <nav class="navbar navbar-expand-lg navbar-light bg-light">
+			       <div class="container-fluid">
+			           <a class="navbar-brand" href="/">Pharmacy Management System</a>
+			           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+			               <span class="navbar-toggler-icon"></span>
+			           </button>
+			           <div class="collapse navbar-collapse" id="navbarNav">
+			               <ul class="navbar-nav">
+			                   <li class="nav-item">
+			                       <a class="nav-link active" aria-current="page" href="/drugs">Drugs</a>
+			                   </li>
+			                   <li class="nav-item">
+			                       <a class="nav-link" href="/stocks">Stocks</a>
+			                   </li>
+			                   <!-- Add more navigation items as needed -->
+			               </ul>
+			           </div>
+			       </div>
+			   </nav>
     <div class="container mt-5">
-        <h1>Stock Management</h1>
+		
+        <h1 class="mb-4">Stock Management</h1>
         
-        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+        <!-- Success and Error Messages -->
         <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
-        <button onclick="showAddStockModal()" class="btn btn-primary mb-3">Add New Stock</button>
-        <a href="/stocks/below-threshold" class="btn btn-warning mb-3">View Stocks Below Threshold</a>
+        <!-- Add New Stock Button and View Stocks Below Threshold Button -->
+        <div class="d-flex justify-content-between mb-3">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
+                <i class="bi bi-plus-circle me-2"></i>Add New Stock
+            </button>
+              <a href="/stocks/below-threshold" class="btn btn-warning mb-3">View Stocks Below Threshold</a>
+        </div>
 
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Drug</th>
-                    <th>Batch No</th>
-                    <th>Quantity</th>
-                    <th>Expiry Date</th>
-                    <th>Manufacturing Date</th>
-                    <th>Threshold</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="stock : ${stocks}">
-                    <td th:text="${stock.drug.name}"></td>
-                    <td th:text="${stock.batchNo}"></td>
-                    <td th:text="${stock.quantity}"></td>
-                    <td th:text="${#temporals.format(stock.expiryDate, 'dd-MM-yyyy')}"></td>
-                    <td th:text="${#temporals.format(stock.manufacturingDate, 'dd-MM-yyyy')}"></td>
-                    <td th:text="${stock.threshold}"></td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" th:onclick="'showUpdateStockModal(' + ${stock.id} + ')'">Update</button>
-                        <form th:action="@{/stocks/delete}" method="post" style="display: inline;">
-                            <input type="hidden" name="id" th:value="${stock.id}" />
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this stock?')">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        <!-- All Stocks Table -->
+        <div id="allStocksTable">
+            <h2>All Stocks</h2>
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Drug</th>
+                        <th>Batch No</th>
+                        <th>Quantity</th>
+                        <th>Expiry Date</th>
+                        <th>Manufacturing Date</th>
+                        <th>Threshold</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="stock : ${stocks}">
+                        <td th:text="${stock.drug.name}"></td>
+                        <td th:text="${stock.batchNo}"></td>
+                        <td th:text="${stock.quantity}"></td>
+                        <td th:text="${#temporals.format(stock.expiryDate, 'dd-MM-yyyy')}"></td>
+                        <td th:text="${#temporals.format(stock.manufacturingDate, 'dd-MM-yyyy')}"></td>
+                        <td th:text="${stock.threshold}"></td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-primary" th:onclick="'showUpdateStockModal(' + ${stock.id} + ')'">
+                                <i class="bi bi-pencil-square"></i> Update
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" th:onclick="'deleteStock(' + ${stock.id} + ')'">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+       
 
     <!-- Add Stock Modal -->
     <div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
@@ -85,7 +99,7 @@
                                 <option th:each="drug : ${drugs}" th:value="${drug.id}" th:text="${drug.name}"></option>
                             </select>
                         </div>
-                      
+                       
                         <div class="mb-3">
                             <label for="quantity" class="form-label">Quantity</label>
                             <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
@@ -100,7 +114,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="threshold" class="form-label">Threshold</label>
-                            <input type="number" class="form-control" id="threshold" name="threshold" required>
+                            <input type="number" class="form-control" id="threshold" name="threshold" min="1" required>
                         </div>
                     </form>
                 </div>
@@ -129,7 +143,15 @@
                         </div>
                         <div class="mb-3">
                             <label for="updateThreshold" class="form-label">Threshold</label>
-                            <input type="number" class="form-control" id="updateThreshold" name="threshold" required>
+                            <input type="number" class="form-control" id="updateThreshold" name="threshold" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="updateExpiryDate" class="form-label">Expiry Date</label>
+                            <input type="date" class="form-control" id="updateExpiryDate" name="expiryDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="updateManufacturingDate" class="form-label">Manufacturing Date</label>
+                            <input type="date" class="form-control" id="updateManufacturingDate" name="manufacturingDate" required>
                         </div>
                     </form>
                 </div>
@@ -144,13 +166,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:inline="javascript">
     /*<![CDATA[*/
-        let addStockModal;
-        let updateStockModal;
-
         document.addEventListener('DOMContentLoaded', function() {
-            addStockModal = new bootstrap.Modal(document.getElementById('addStockModal'));
-            updateStockModal = new bootstrap.Modal(document.getElementById('updateStockModal'));
-
             // Set min date for expiry date (tomorrow)
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -176,17 +192,20 @@
             });
         });
 
-        function showAddStockModal() {
-            addStockModal.show();
-        }
-
         function showUpdateStockModal(id) {
             const stocks = /*[[${stocks}]]*/ [];
-            const stock = stocks.find(s => s.id === id);
-            document.getElementById('updateStockId').value = stock.id;
-            document.getElementById('updateQuantity').value = stock.quantity;
-            document.getElementById('updateThreshold').value = stock.threshold;
-            updateStockModal.show();
+            const stock = stocks.find(s => s.id == id);
+            if (stock) {
+                document.getElementById('updateStockId').value = stock.id;
+                document.getElementById('updateQuantity').value = stock.quantity;
+                document.getElementById('updateThreshold').value = stock.threshold;
+                document.getElementById('updateExpiryDate').value = stock.expiryDate;
+                document.getElementById('updateManufacturingDate').value = stock.manufacturingDate;
+                const updateStockModal = new bootstrap.Modal(document.getElementById('updateStockModal'));
+                updateStockModal.show();
+            } else {
+                console.error('Stock not found');
+            }
         }
 
         function submitAddStockForm() {
@@ -203,9 +222,42 @@
             }
         }
 
+        function deleteStock(id) {
+            if (confirm('Are you sure you want to delete this stock?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = /*[[@{/stocks/delete}]]*/ '';
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                idInput.value = id;
+                form.appendChild(idInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function reorderStock(id) {
+            if (confirm('Are you sure you want to reorder this stock?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = /*[[@{/stocks/reorder}]]*/ '';
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                idInput.value = id;
+                form.appendChild(idInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
         function validateStockForm(form) {
             const quantity = parseInt(form.quantity.value);
             const threshold = parseInt(form.threshold.value);
+            const expiryDate = new Date(form.expiryDate.value);
+            const manufacturingDate = new Date(form.manufacturingDate.value);
+            const today = new Date();
 
             if (isNaN(quantity) || quantity <= 0) {
                 alert('Quantity must be greater than 0.');
@@ -217,25 +269,19 @@
                 return false;
             }
 
-            if (form.expiryDate) {
-                const expiryDate = new Date(form.expiryDate.value);
-                const manufacturingDate = new Date(form.manufacturingDate.value);
-                const today = new Date();
+            if (expiryDate <= today) {
+                alert('Expiry date must be in the future.');
+                return false;
+            }
 
-                if (expiryDate <= today) {
-                    alert('Expiry date must be in the future.');
-                    return false;
-                }
+            if (manufacturingDate > today) {
+                alert('Manufacturing date cannot be in the future.');
+                return false;
+            }
 
-                if (manufacturingDate > today) {
-                    alert('Manufacturing date cannot be in the future.');
-                    return false;
-                }
-
-                if (manufacturingDate >= expiryDate) {
-                    alert('Manufacturing date must be before the expiry date.');
-                    return false;
-                }
+            if (manufacturingDate >= expiryDate) {
+                alert('Manufacturing date must be before the expiry date.');
+                return false;
             }
 
             return true;
@@ -250,7 +296,24 @@
             }
             input.reportValidity();
         }
+
+        function toggleBelowThresholdView() {
+            const allStocksTable = document.getElementById('allStocksTable');
+            const belowThresholdTable = document.getElementById('belowThresholdTable');
+            const viewBelowThresholdButton = document.querySelector('button[onclick="toggleBelowThresholdView()"]');
+
+            if (allStocksTable.style.display === 'none') {
+                allStocksTable.style.display = 'block';
+                belowThresholdTable.style.display = 'none';
+                viewBelowThresholdButton.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>View Stocks Below Threshold';
+            } else {
+                allStocksTable.style.display = 'none';
+                belowThresholdTable.style.display = 'block';
+                viewBelowThresholdButton.innerHTML = '<i class="bi bi-list me-2"></i>View All Stocks';
+            }
+        }
     /*]]>*/
     </script>
 </body>
 </html>
+

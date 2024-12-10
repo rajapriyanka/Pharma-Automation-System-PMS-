@@ -43,7 +43,7 @@
 	                      <th>Current Quantity</th>
 	                      <th>Threshold</th>
 	                      <th>Expiry Date</th>
-	                      <th>Actions</th>
+	                   
 	                  </tr>
 	              </thead>
 	              <tbody>
@@ -53,9 +53,7 @@
 	                      <td th:text="${stock.quantity}"></td>
 	                      <td th:text="${stock.threshold}"></td>
 	                      <td th:text="${#temporals.format(stock.expiryDate, 'dd-MM-yyyy')}"></td>
-	                      <td>
-	                          <a th:href="@{/stocks/reorder/{id}(id=${stock.id})}" class="btn btn-sm btn-warning">Reorder</a>
-	                      </td>
+	                    
 	                  </tr>
 	              </tbody>
 	          </table>
